@@ -9,6 +9,7 @@ SetWorkingDir, %A_ScriptDir%\Wallpapers
 ;~ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━命令行参数手动下载
 if 1=/m ;手动下载指定地址参数 /m ;将需要下载图片那天的网址粘贴进inputbox
 {
+	sign_date:=1
 InputBox, url_file, National Geographic_Photo of the Day, 请输入需要下载图片那天的网址:
 	if url_file=
 		ExitApp
@@ -69,26 +70,37 @@ Pic_Height=<meta property="og:image:height" content="(\d+)"/>
 RegExMatch(url_pic, Pic_Height, Pic_Height)
 Pic_Height:=Pic_Height1
 
-Pic_Date=<meta property="article:published_time" content="(.+?)"/>
-RegExMatch(url_pic, Pic_Date, Pic_Date_org)
-StringReplace, Pic_Date_org1, Pic_Date_org1, -, ., All
-; -----------------------------------------格式化日期为数字形式：如果不含".", 为英文格式的日期：Wed Aug 24 00:04:32 EDT 2016
-if !InStr(Pic_Date_org1, ".")
-	{
-		Pic_Date=<meta property="article:published_time" content=".+?\s(.+?)\s(\d+)\s.+?\s.+?\s(\d+)"/>
-		RegExMatch(url_pic, Pic_Date, Pic_Date_org)
+if sign_date ;非今天标识成立
+{
+	Pic_Date=<meta property="article:published_time" content="(.+?)"/>
+	RegExMatch(url_pic, Pic_Date, Pic_Date_org)
+	StringReplace, Pic_Date_org1, Pic_Date_org1, -, ., All
+	; -----------------------------------------格式化日期为数字形式：如果不含".", 为英文格式的日期：Wed Aug 24 00:04:32 EDT 2016
+	if !InStr(Pic_Date_org1, ".")
+		{
+			Pic_Date=<meta property="article:published_time" content=".+?\s(.+?)\s(\d+)\s.+?\s.+?\s(\d+)"/>
+			RegExMatch(url_pic, Pic_Date, Pic_Date_org)
 
-		Pic_Date_month:=Month_Word2Num(Pic_Date_org1)
+			Pic_Date_month:=Month_Word2Num(Pic_Date_org1)
 
-		if StrLen(Pic_Date_org2)=1 ;如果日期为1位数则补足两位
-			Pic_Date_org2:= "0" Pic_Date_org2
-		Pic_Date_date:=Pic_Date_org2
+			if StrLen(Pic_Date_org2)=1 ;如果日期为1位数则补足两位
+				Pic_Date_org2:= "0" Pic_Date_org2
+			Pic_Date_date:=Pic_Date_org2
 
-		Pic_Date_year:=Pic_Date_org3
+			Pic_Date_year:=Pic_Date_org3
 
-		Pic_Date:=Pic_Date_year . "." . Pic_Date_month . "." . Pic_Date_date
-	}
-else Pic_Date:=Pic_Date_org1
+			Pic_Date:=Pic_Date_year . "." . Pic_Date_month . "." . Pic_Date_date
+		}
+	else Pic_Date:=Pic_Date_org1
+}
+else ;否则是今天下载的， 用今天日期
+{
+	Pic_Date_month:=A_MM
+	Pic_Date_date:=A_DD
+	Pic_Date_year:=A_YYYY
+
+	Pic_Date:=Pic_Date_year . "." . Pic_Date_month . "." . Pic_Date_date
+}
 
 Month_Word2Num(str){ ;格式化月份单词为两位数字的函数
 	Static Months := "_Jan01_January01_Feb02_February02_Mar03_March03_Apr04_April04_May05_Jun06_June06_Jul07_July07_Aug08_August08_Sep09_September09_Oct10_October10_Nov11_November11_Dec12_December12_"
