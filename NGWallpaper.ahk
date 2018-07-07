@@ -14,8 +14,8 @@ if 1=/m ;手动下载指定地址参数 /m ;将需要下载图片那天的网址
 	if url_file=
 		ExitApp
 }
-else url_file=http://www.nationalgeographic.com/photography/photo-of-the-day
-; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~下载网页,5次失败则退出
+else url_file:="https://www.nationalgeographic.com/photography/photo-of-the-day"
+; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~下载5次失败则退出
 Loop
 	{
 		t+=1
@@ -38,11 +38,17 @@ FileRead url_pic,temp
 Pic_Link=<meta property="og:image" content="(.+?)"/>
 RegExMatch(url_pic, Pic_Link, Pic_Link)
 Pic_Link:=Pic_Link1
+; -----------------------------------------
+Pic_Title_main="json":{"title":"(.+)"}}\n
+RegExMatch(url_pic, Pic_Title_main, Pic_Title_main)
+Pic_Title_main:=Pic_Title_main1
 
-Pic_Title=<title>(.+?)(\s\|.+)??</title>
-RegExMatch(url_pic, Pic_Title, Pic_Title)
-Pic_Title:=Pic_Title1
+Pic_Title_vice=<meta property="og:url" content="https://www.nationalgeographic.com/photography/photo-of-the-day/\d{4}/\d{2}/(.+)/"/>\n<link rel
+RegExMatch(url_pic, Pic_Title_vice, Pic_Title_vice)
+Pic_Title_vice:=Pic_Title_vice1
 
+Pic_Title:=Pic_Title_main . "(" . Pic_Title_vice . ")"
+; -----------------------------------------
 Pic_Width=<meta property="og:image:width" content="(\d+)"/>
 RegExMatch(url_pic, Pic_Width, Pic_Width)
 Pic_Width:=Pic_Width1
@@ -53,7 +59,7 @@ Pic_Height:=Pic_Height1
 
 if sign_date ;非今天标识成立
 {
-	Pic_Date=<meta property="article:published_time" content="(.+?)"/>
+	Pic_Date=<meta property="article:published_time" content="(\d{4}-\d{2}-\d{2}).+"/>
 	RegExMatch(url_pic, Pic_Date, Pic_Date_org)
 	StringReplace, Pic_Date_org1, Pic_Date_org1, -, ., All
 	; -----------------------------------------格式化日期为数字形式：如果不含".", 为英文格式的日期：Wed Aug 24 00:04:32 EDT 2016
