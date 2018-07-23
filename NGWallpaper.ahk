@@ -95,6 +95,7 @@ Month_Word2Num(str){ ;格式化月份单词为两位数字的函数
 }
 
 Pic_FilePath := Pic_Date . "_" . Pic_Title . "_" . Pic_Width . "×" . Pic_Height . ".jpg" ;文件名形成
+StringReplace, Pic_FilePath, Pic_FilePath, ?, ？, A ;所有英文?替换为中文？， 否则不能建立文件名(WIN系统限制)
 ; -----------------------------------------debug
 ; MsgBox, % Pic_Link
 ; MsgBox, % Pic_Title
@@ -117,6 +118,7 @@ Loop
 		URLDownloadToFile, %Pic_Link%, %Pic_FilePath%
 		If Errorlevel=0
 			{
+				; MsgBox, ErrorLevel=0
 				FileDelete temp
 				Break
 			}
